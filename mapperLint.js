@@ -48,7 +48,7 @@ function traverse(json) {
     }
     removeAttributos(json);
     Object.keys(json).forEach(key => {
-        if (typeof json[key] === 'object') {
+        if (key === 'node' && typeof json[key] === 'object') {
             removeAttributos(json[key]);
             traverse(json[key])
         }

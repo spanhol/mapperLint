@@ -4,11 +4,9 @@
   "description": "",
   "main": "mapperLint.js",
   "scripts": {
-    "dev" : "node mapperLint.js arquivos/br.com.viasoft.nimitz.mm -d saida/saida.mm",
-    "pasta" : "node mapperLint.js arquivos -d saida/saida.mm",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev" : "node mapperLint.js arquivos -d saida"
   },
-  "author": "",
+  "author": "Fernando Spanhol",
   "license": "ISC",
   "dependencies": {
     "xml-js": "^1.6.11"
