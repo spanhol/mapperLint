@@ -1,8 +1,14 @@
+#!/usr/bin/env node
+
 let fs = require('fs');
 let xmlConverter = require('xml-js');
 
 function main() {
     const args = process.argv.slice(2);
+    if (!args[0]){
+        console.log("Informe um arquivo ou pasta.")
+        return;
+    }
     let fileName = args[0]
     if (!fileName.startsWith("/") && !fileName.startsWith(".")) {
         fileName = "./" + fileName;
