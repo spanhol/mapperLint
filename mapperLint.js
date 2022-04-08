@@ -40,7 +40,8 @@ function processaArquivo(file) {
         var json = xmlConverter.xml2js(data, { compact: true, spaces: 4 });
         traverse(json.map);
         let xml = xmlConverter.js2xml(json, { compact: true, spaces: 4 });
-        xml = xml.replace(/&/g, '&amp;');
+        // xml = xml.replace(/&&/g, '&amp;&amp;');
+        xml = xml.replace(/&(?![A-Za-z]+;|#[0-9]+;)/g, '&amp;');
         let errWriteFile = fs.writeFileSync(file, xml, 'utf8');
         if (errWriteFile) {
             console.log(errWriteFile);
