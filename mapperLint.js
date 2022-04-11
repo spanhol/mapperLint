@@ -20,9 +20,10 @@ main();
 
 function processa(basePath, path) {
     let caminho = basePath + path;
-    if (fs.lstatSync(caminho).isFile() && caminho.endsWith(".mm")) {
+    let lsStat = fs.lstatSync(caminho);
+    if (lsStat.isFile() && caminho.endsWith(".mm")) {
         processaArquivo(caminho);
-    } else if (fs.lstatSync(caminho).isDirectory()) {
+    } else if (lsStat.isDirectory()) {
         fs.readdirSync(caminho).forEach(f => {
             // console.log(basePath + path + "/" +  f);
             processa(basePath + path + "/", f);
@@ -37,11 +38,13 @@ function processaArquivo(file) {
             console.log("a");
         }
 
-        var json = xmlConverter.xml2js(data, { compact: true, spaces: 4 });
-        traverse(json.map);
-        let xml = xmlConverter.js2xml(json, { compact: true, spaces: 4 });
+        var js = xmlConverter.xml2js(data, { compact: true, spaces: 4 });
+        traverse(js.map);
+        let xml = xmlConverter.js2xml(js, { compact: true, spaces: 4, fullTagEmptyElement: true });
         // xml = xml.replace(/&&/g, '&amp;&amp;');
         xml = xml.replace(/&(?![A-Za-z]+;|#[0-9]+;)/g, '&amp;');
+        xml = xml.replace(/\>\<\/icon\>/g, '/>');
+        xml = xml.replace(/\>\<\/node\>/g, '>\n</node>');
         let errWriteFile = fs.writeFileSync(file, xml, 'utf8');
         if (errWriteFile) {
             console.log(errWriteFile);
