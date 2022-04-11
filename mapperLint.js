@@ -9,8 +9,8 @@ const options = {
     basePathEntrada: "",
     basePathSaida: "",
     desviarSaida: false,
-    fontes: false,
-    cor: false,
+    removerFontes: false,
+    removerCor: false,
     validaChamadas: false
 }
 
@@ -32,21 +32,15 @@ function main() {
                 options.basePathSaida = path.resolve(args[i]);
                 break;
             case "-f":
-                options.fontes = true;
+                options.removerFontes = true;
                 break;
             case "-c":
-                options.cor = true;
+                options.removerCor = true;
                 break;
         }
     }
     options.basePathEntrada = path.resolve(args[0])
     processa("");
-}
-
-function sleep(ms) {
-    return new Promise((resolve) => {
-        setTimeout(resolve, ms);
-    });
 }
 
 main();
@@ -102,7 +96,8 @@ function traverse(json) {
     }
     removeAttributos(json, options);
     Object.keys(json).forEach(key => {
-        if (key === 'node' && typeof json[key] === 'object') {
+        // console.log("key = " + key + " - " + typeof json[key]);
+        if (typeof json[key] === 'object' && key != '_attributes') {
             removeAttributos(json[key]);
             traverse(json[key])
         }
@@ -120,15 +115,27 @@ function removeAttributos(json) {
         if (json._attributes.MODIFIED) {
             delete json._attributes.MODIFIED;
         }
-        if (options.fontes) {
-            if (json._attributes.FONT) {
-                delete json._attributes.FONT;
-            }
+        if (json._attributes.FOLDED) {
+            delete json._attributes.FOLDED;
         }
-        if (options.cor) {
-            if (json._attributes.COLOR) {
-                delete json._attributes.COLOR;
-            }
+        if (json._attributes.VSHIFT) {
+            delete json._attributes.VSHIFT;
+        }
+        if (json._attributes.HGAP) {
+            delete json._attributes.HGAP;
+        }
+        if (json._attributes.STYLE) {
+            delete json._attributes.STYLE;
+        }
+        //se remover cor
+        if (json._attributes.COLOR && options.removerCor) {
+            delete json._attributes.COLOR;
+        }
+    }
+    //se remover cor
+    if (options.removerFontes) {
+        if (json.font) {
+            delete json.font;
         }
     }
 }
