@@ -1,10 +1,10 @@
 {
   "name": "mapperlint",
-  "version": "1.0.03",
+  "version": "1.0.04",
   "description": "",
   "main": "mapperLint.js",
   "scripts": {
-    "dev" : "node mapperLint.js arquivos -d saida"
+    "dev": "node mapperLint.js arquivos -d saida -f -c "
   },
   "bin": {
     "mapperlint": "./mapperLint.js"
@@ -12,6 +12,7 @@
   "author": "Fernando Spanhol",
   "license": "ISC",
   "dependencies": {
+    "graceful-fs": "^4.2.10",
     "xml-js": "^1.6.11"
   }
 }
