@@ -98,10 +98,20 @@ function traverse(json) {
     Object.keys(json).forEach(key => {
         // console.log("key = " + key + " - " + typeof json[key]);
         if (typeof json[key] === 'object' && key != '_attributes') {
+            converteCodigos(json[key])
             removeAttributos(json[key]);
             traverse(json[key])
         }
     })
+}
+
+function converteCodigos(json) {
+    if (json._attributes) {
+        if (json._attributes.TEXT) {
+            // json._attributes.TEXT = json._attributes.TEXT.split("<").join("&lt;");
+            json._attributes.TEXT = json._attributes.TEXT.replace(new RegExp("<", 'g'), "&lt;");
+        }
+    }
 }
 
 function removeAttributos(json) {
@@ -114,9 +124,6 @@ function removeAttributos(json) {
         }
         if (json._attributes.MODIFIED) {
             delete json._attributes.MODIFIED;
-        }
-        if (json._attributes.FOLDED) {
-            delete json._attributes.FOLDED;
         }
         if (json._attributes.VSHIFT) {
             delete json._attributes.VSHIFT;
