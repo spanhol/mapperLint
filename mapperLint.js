@@ -75,7 +75,7 @@ function processaArquivo(file) {
         var js = xmlConverter.xml2js(data, { compact: true, spaces: 4 });
         traverse(js.map);
         let xml = xmlConverter.js2xml(js, { compact: true, spaces: 4, fullTagEmptyElement: true });
-        xml = xml.replace(/&(?![A-Za-z]+;|#[0-9]+;)/g, '&amp;');
+        xml = xml.replace(/&(?![A-Za-z]+;|#[0-9]+;|#[A-Za-z]+;)/g, '&amp;');
         xml = xml.replace(/\>\<\/icon\>/g, '/>');
         xml = xml.replace(/\>\<\/node\>/g, '>\n</node>');
         let outFile = path.join(options.basePathEntrada, file);
@@ -110,6 +110,7 @@ function converteCodigos(json) {
         if (json._attributes.TEXT) {
             // json._attributes.TEXT = json._attributes.TEXT.split("<").join("&lt;");
             json._attributes.TEXT = json._attributes.TEXT.replace(new RegExp("<", 'g'), "&lt;");
+            json._attributes.TEXT = json._attributes.TEXT.replace(new RegExp("\n", 'g'), "&#xa;");
         }
     }
 }
