@@ -1,6 +1,6 @@
 {
   "name": "mapperlint",
-  "version": "1.0.051",
+  "version": "1.0.06",
   "description": "",
   "main": "mapperLint.js",
   "scripts": {

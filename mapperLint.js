@@ -4,6 +4,9 @@ const fs = require('graceful-fs')
 const path = require('path');
 const process = require('process');
 
+const Validator = require('./Validator');
+const Util = require('./Util');
+
 const xmlConverter = require('xml-js');
 const options = {
     basePathEntrada: "",
@@ -11,12 +14,21 @@ const options = {
     desviarSaida: false,
     removerFontes: false,
     removerCor: false,
-    validaChamadas: false
+    validar: false,
 }
 
 function main() {
+    const help = "  Recebe um arquivo ou pasta como primeiro parametro, processa os arquivos .mm dentro do caminho informado, limpandos os atributos desnecessarios.\n"
+        + "  -h Mostra esse help\n"
+        + "  -d Muda pasta de saida. Por padrão é o caminho passado por parametro\n"
+        + "  -f Limpa também atributos de fonte\n"
+        + "  -c Limpa também atributos de cor\n"
+        // + "  -b Adiciona links nos tipos encontrados\n"
+        + "  -v Procura erros no mapa\n";
+
     const args = process.argv.slice(2);
     if (!args[0]) {
+        console.log(help);
         console.log("Informe um arquivo ou pasta.")
         return;
     }
@@ -37,15 +49,21 @@ function main() {
             case "-c":
                 options.removerCor = true;
                 break;
+            case "-v":
+                options.validar = true;
+                break;
+            case "-h":
+                console.log(help);
+                break;
         }
     }
     options.basePathEntrada = path.resolve(args[0])
-    processa("");
+    processa();
 }
 
 main();
 
-function processa(caminho) {
+function processa(caminho = "") {
     if (caminho.endsWith(".git")) {
         return
     }
@@ -74,6 +92,10 @@ function processaArquivo(file) {
     fs.readFile(path.join(options.basePathEntrada, file), function (err, data) {
         var js = xmlConverter.xml2js(data, { compact: true, spaces: 4 });
         traverse(js.map);
+        if (options.validar) {
+            validate(js.map);
+        }
+
         let xml = xmlConverter.js2xml(js, { compact: true, spaces: 4, fullTagEmptyElement: true });
         xml = xml.replace(/&(?![A-Za-z]+;|#[0-9]+;|#[A-Za-z]+;)/g, '&amp;');
         xml = xml.replace(/\>\<\/icon\>/g, '/>');
@@ -90,25 +112,31 @@ function processaArquivo(file) {
     });
 }
 
-function traverse(json) {
+function traverse(obj) {
+    if (!obj) {
+        return;
+    }
+    converteCodigos(obj)
+    removeAttributos(obj);
+    let err = Util.traverse(obj,
+        [e => { return true }, e => { return true }],
+        [converteCodigos, removeAttributos])
+    if (err) {
+        console.log(err)
+    }
+}
+
+function validate(json) {
     if (!json) {
         return;
     }
-    removeAttributos(json, options);
-    Object.keys(json).forEach(key => {
-        // console.log("key = " + key + " - " + typeof json[key]);
-        if (typeof json[key] === 'object' && key != '_attributes') {
-            converteCodigos(json[key])
-            removeAttributos(json[key]);
-            traverse(json[key])
-        }
-    })
+    validator = new Validator();
+    validator.validate(json);
 }
 
 function converteCodigos(json) {
     if (json._attributes) {
         if (json._attributes.TEXT) {
-            // json._attributes.TEXT = json._attributes.TEXT.split("<").join("&lt;");
             json._attributes.TEXT = json._attributes.TEXT.replace(new RegExp("<", 'g'), "&lt;");
             json._attributes.TEXT = json._attributes.TEXT.replace(new RegExp("\n", 'g'), "&#xa;");
         }
@@ -117,37 +145,19 @@ function converteCodigos(json) {
 
 function removeAttributos(json) {
     if (json._attributes) {
-        if (json._attributes.CREATED) {
-            delete json._attributes.CREATED;
-        }
-        if (json._attributes.ID) {
-            delete json._attributes.ID;
-        }
-        if (json._attributes.MODIFIED) {
-            delete json._attributes.MODIFIED;
-        }
-        if (json._attributes.VSHIFT) {
-            delete json._attributes.VSHIFT;
-        }
-        if (json._attributes.HGAP) {
-            delete json._attributes.HGAP;
-        }
-        if (json._attributes.STYLE) {
-            delete json._attributes.STYLE;
-        }
+        delete json._attributes.CREATED;
+        delete json._attributes.ID;
+        delete json._attributes.MODIFIED;
+        delete json._attributes.VSHIFT;
+        delete json._attributes.HGAP;
+        delete json._attributes.STYLE;
         //se remover cor
-        if (json._attributes.COLOR && options.removerCor) {
+        if (options.removerCor) {
             delete json._attributes.COLOR;
         }
     }
-    //se remover cor
+    //se remover fontes
     if (options.removerFontes) {
-        if (json.font) {
-            delete json.font;
-        }
+        delete json.font;
     }
 }
-
-// function validaWritePattern(json) {
-    //TODO
-// }
