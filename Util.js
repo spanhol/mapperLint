@@ -1,3 +1,7 @@
+const xmlConverter = require('xml-js');
+const fs = require('graceful-fs')
+const path = require('path');
+
 module.exports = class Util {
 
 	static traverse(obj, condition, act) {
@@ -113,4 +117,68 @@ module.exports = class Util {
 			return children
 		}
 	}
+
+	static addChildren(obj, child) {
+		if (!obj || !child) {
+			return
+		}
+		if (!obj.node) {
+			obj.node = [];
+			obj.node.push(child);
+		} else if (Array.isArray(obj.node)) {
+			obj.node.push(child);
+		} else if (typeof obj.node === 'object') {
+			let children = []
+			children.push(obj.node)
+			children.push(child)
+			obj.node = children;
+		}
+	}
+
+	static lerXMLparaJs(inFile) {
+		let data = fs.readFileSync(inFile)
+		return xmlConverter.xml2js(data, { compact: true, spaces: 4 });
+	}
+
+	static limpaJsParaTransformarEmXML(js) {
+		Util.removeParentNodeRef(js.map);
+	}
+
+	static escreverJsParaXML(js, outFile) {
+		this.limpaJsParaTransformarEmXML(js);
+		let xml = xmlConverter.js2xml(js, { compact: true, spaces: 4, fullTagEmptyElement: true });
+		xml = xml.replace(/&(?![A-Za-z]+;|#[0-9]+;|#[A-Za-z]+;)/g, '&amp;');
+		xml = xml.replace(/\>\<\/icon\>/g, '/>');
+		xml = xml.replace(/\>\<\/node\>/g, '>\n</node>');
+		fs.writeFileSync(outFile, xml);
+	}
+
+	static equals(node1, node2) {
+		if (node1._attributes?.TEXT != node2._attributes?.TEXT) {
+			return false;
+		}
+		if (node1.icon?._attributes?.BUILTIN != node2.icon?._attributes?.BUILTIN) {
+			return false;
+		}
+		return true;
+	}
+
+	static equalsIgnoreClassName(node1, node2) {
+		if (Util.isAnyClass(node1) && Util.isAnyClass(node2)) {
+			return true;
+		}
+		if (node1._attributes?.TEXT != node2._attributes?.TEXT) {
+			return false;
+		}
+		if (node1.icon?._attributes?.BUILTIN != node2.icon?._attributes?.BUILTIN) {
+			return false;
+		}
+		return true;
+	}
+
+	static isAnyClass(node) {
+		return node.icon?._attributes?.BUILTIN.startsWith("Descriptor.");
+	}
+
+
 }

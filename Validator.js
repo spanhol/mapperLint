@@ -29,7 +29,6 @@ module.exports = class Validator {
 			console.log(mode.toString())
 		});
 		this.findCalls(this.start)
-		Util.removeParentNodeRef(this.json)
 	};
 
 
