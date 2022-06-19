@@ -1,10 +1,22 @@
+const fs = require('graceful-fs')
+const path = require('path');
 const Util = require('./Util');
 
 module.exports = class Merge {
 
 	join(mergeMapOrigem, mergeMapDestino) {
+		if (!fs.existsSync(mergeMapOrigem)) {
+			return
+		}
 		let origem = Util.lerXMLparaJs(mergeMapOrigem);
-		let destino = Util.lerXMLparaJs(mergeMapDestino);
+		let destino;
+		if (fs.existsSync(mergeMapDestino)) {
+			destino = Util.lerXMLparaJs(mergeMapDestino);
+		} else {
+			let node = []
+			destino = { map: node }
+		}
+
 		Util.getChildren(origem.map.node).forEach(oChild => {
 			Util.addChildren(destino.map.node, oChild);
 		});
@@ -12,8 +24,16 @@ module.exports = class Merge {
 	}
 
 	merge(mergeMapOrigem, mergeMapDestino) {
+		if (!fs.existsSync(mergeMapOrigem)) {
+			return
+		}
 		let origem = Util.lerXMLparaJs(mergeMapOrigem);
-		let destino = Util.lerXMLparaJs(mergeMapDestino);
+		let destino;
+		if (fs.existsSync(mergeMapDestino)) {
+			destino = Util.lerXMLparaJs(mergeMapDestino);
+		} else {
+			destino = Util.newMapFrom(origem);
+		}
 		this.mergeNodes(origem.map, destino.map);
 		Util.escreverJsParaXML(destino, mergeMapDestino);
 	}

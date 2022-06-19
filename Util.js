@@ -180,5 +180,39 @@ module.exports = class Util {
 		return node.icon?._attributes?.BUILTIN.startsWith("Descriptor.");
 	}
 
+	static newMapFrom(origem) {
+		if (!origem) {
+			return this.newMap();
+		}
+		return this.newMap(origem.map.node._attributes.LINK, origem.map.node._attributes.TEXT, origem.map.node.icon._attributes.BUILTIN);
+	}
 
+	static newMap(link = "", text = "Class", icon = "Descriptor.class") {
+		return {
+			map: {
+				_attributes: {
+					version: "1.0.1"
+				},
+				_comment: " To view this file, download free mind mapping software FreeMind from http://freemind.sourceforge.net ",
+				node: {
+					_attributes: {
+						LINK: link,
+						TEXT: text
+					},
+					icon: {
+						_attributes: {
+							BUILTIN: icon
+						}
+					}
+				}
+			}
+		}
+	}
+
+	static criaPasta(pasta) {
+		let err = fs.mkdirSync(pasta, { recursive: true })
+		if (err) {
+			return console.error(err);
+		}
+	}
 }
